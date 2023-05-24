@@ -165,8 +165,173 @@ $$
 E\sum_t\frac{dQ(s_t,a_t)}{d\theta} = E\sum_t\frac{dQ}{da_t}\frac{da_t}{d\theta}
 $$
 
+<img src=".\pictures\DDPG.png" alt="DDPG" style="zoom:50%;" />
 
-## 6. Evolutional Methods
+### 5.5 Maximum Entropy RL
+
+Standard RL tries to maximize the expected sum of rewards
+$$
+J(\pi) = \sum_{t=1}^T E_{(s_t,a_t)\sim \rho_\pi}R(s_t,a_t),
+$$
+where $\rho_{\pi}$ is the state-action marginal probabilities induced from $\pi$, and the optimal policy is given by
+$$
+\pi^* = \arg\max_\pi J(\pi).
+$$
+The optimal policy is a deterministic policy. However, in some cases we might prefer stochastic policies. Stochastic policies are useful because:
+
+- learn all possible ways to accomplishing a task
+- Better policies to finetune from for specific env
+- Better exploration
+- **Robust for hyperparameters**
+
+Thus we need a objective function that favors stochastic policies. The maximum entropy RL objective function is given by
+$$
+J(\pi) = \sum_{t=1}^T R(s_t,a_t) + \alpha H(\pi(\cdot|s_t)),
+$$
+where 
+$$
+H(\pi(\cdot|s)) = -\sum_a \pi(a|s)\log\pi(a|s)
+$$
+is the entropy and $\alpha$ is used to determine the relative importance of the reward and entropy. 
+
+For discrete action sets, instead of using argmax, we use softmax over estimated Q values and sample actions from it
+$$
+\pi(a_t|s_t)\propto \exp\left(-\frac{1}{\alpha}Q^{soft}(s_t,a_t)\right),
+$$
+where $Q^{soft}_\pi$ is expected cumulative sum of rewards + expected cumulative sum of entropy.
+
+**Soft Bellman equation**:
+$$
+q_\pi^{soft}(s,a) = r(s,a) + \sum_{s'\in S}T(s'|s,a)\sum_{a'\in A}(q^{soft}_\pi(s',a')-\alpha H(\pi(a'|s')))
+$$
+**Soft Bellman backup update operator**:
+$$
+Q^{soft}(s_t,a_t) \leftarrow r(s_t,a_t) + \gamma E_{s_{t+1},a_{t+1}}\left[Q^{soft}(s_{t+1},a_{t+1}) -\alpha H(\pi(a_{t+1}|s_{t+1})) \right]
+$$
+define
+$$
+r^{soft}(s_t,a_t) = r(s_t,a_t) + \gamma \alpha E_{s_{t+1}\sim \rho}H(\pi(\cdot|s_{t+1}))
+$$
+then
+$$
+Q^{soft}(s_t,a_t) \leftarrow r^{soft}(s_t,a_t) + \gamma E_{s_{t+1},a_{t+1}}\left[Q^{soft}(s_{t+1},a_{t+1})\right]
+$$
+
+#### 5.5.1 Soft Policy Iteration(Tabular case)
+
+Soft policy iteration iterates between two steps:
+
+1. *Soft policy evaluation*: till convergence
+   $$
+   Q^{soft}(s,a) \leftarrow r(s,a) + \gamma E_{s',a'}\left[Q^{soft}(s',a') -\alpha H(\pi(a'|s')) \right]
+   $$
+   This converges to $Q^\pi$.
+
+2. *Soft policy improvement*: Update policy
+   $$
+   \pi_{new} = \arg\min_{\pi'\in \Pi}D_{KL}\left[\pi'(\cdot|s_t)||\frac{\exp\frac{1}{\alpha}Q^{old}(s_t,\cdot)}{Z^{old}(s_t)}\right]
+   $$
+
+#### 5.5.2 Soft Policy Iteration: Approximation
+
+1. Learning $Q_\theta(s_t)$:
+   $$
+   J_Q(\theta) = E_{(s_t,a_t)\sim D}\left[\frac{1}{2}\left(Q_\theta(s_t,a_t) - \hat{Q}(s_t,a_t)\right)^2\right]
+   $$
+   Using semi-gradient:
+   $$
+   \nabla_\theta J_Q(\theta) = \nabla_\theta Q_\theta(s_t,a_t)\left(Q_\theta(s_t,a_t)-(r(s_t,a_t)+\gamma\left( Q_{\tilde{\theta}}(s_{t+1},a_{t+1})-\alpha \log\pi_{\phi}(a_{t+1}|s_{t+1}))\right) \right)
+   $$
+   Here we use TD target
+
+2. Learning $\pi_\phi(a_t|s_t)$:
+   $$
+   J_\pi(\phi) = E_{s_t\in D}D_{KL}\left[\pi_\phi(\cdot|s_t)||\frac{\exp\frac{1}{\alpha}Q_{\theta}(s_t,\cdot)}{Z_{\theta}(s_t)}\right]
+   $$
+   and the gradient
+   $$
+   \nabla_\phi J_\pi(\phi) = \nabla_\phi E_{s_t\in D}E_{a_t\sim \pi_\phi(a|s_t)}\left[\log\pi_\phi(a_t|s_t)-\frac{1}{\alpha}Q_\theta(s_t,a_t) \right]
+   $$
+   Re-parameterization: $a_t = f_\phi(s_t,\epsilon) = \mu_\phi(s_t)+\epsilon \Sigma_\phi(s_t), \epsilon\sim N(0,1)$
+   $$
+   \nabla_\phi J_\pi(\phi) =  E_{s_t\in D, \epsilon\sim N(0,1)}\nabla_{a_t}\left[\log\pi_\phi(a_t|s_t)-\frac{1}{\alpha}Q_\theta(s_t,a_t) \right]\nabla_\phi a_t
+   $$
+
+#### 5.5.3 Composability of Maximum Entropy Policies
+
+
+
+#### 5.5.4 Soft Actor Critic
+
+
+
+## 6. Evolutional Methods for policy search
+
+General evolutional algorithm:
+
+0. Initialize a population of parameter vectors
+1. Make random perturbations (mutations) to each parameter vector
+2. Evaluate the perturbed parameter vector(fitness)
+3. Keep the perturbed vector if the result improves(selection)
+4. GOTO 1
+
+### 6.1 Cross-Entropy Method(CEM)
+
+- Policy params are sampled from a multivariate Gaussian distribution with a **diagonal covariance matrix**
+- update mean and variances of the parameter using samples that have highest fitness scores(elites)
+
+<img src=".\pictures\CEM.png" alt="CEM" style="zoom:50%;" />
+
+### 6.2 Covariance Matrix Adaptation(CMA-ES)
+
+- Policy params are sampled from a multivariate Gaussian distribution with a **full covariance matrix**.
+- update mean and vars using elites
+
+$$
+\mu_{t+1} = \sum_{i=1}^{n_{elit}}w_i\theta_i^{elite,t}
+$$
+
+$$
+\Sigma_{t+1} = Cov(\theta_1^{elite,t},\theta_2^{elite,t},\cdots) + \epsilon I
+$$
+
+### 6.3 Natural Evolutionary Strategies (NES)
+
+- NES considers **every** offspring
+- $\theta \sim P_\mu(\theta)$, $P_\mu(\theta)$ is a Gaussian distribution with mean $\mu \in \R^d$ and **diagonal and fixed covariance matrix** $\sigma^2I_d$.
+- Goal: $\max_\mu E_{\theta\sim P_\mu(\theta)}F(\theta)$, where fitness score $F(\theta) = E_{\tau\sim \pi_\theta,s_0\sim \mu_0(s)} R(\tau)$.
+
+$$
+\begin{equation}
+\begin{aligned}
+\nabla_\mu E_{\theta\sim P_\mu(\theta)}F(\theta) &= \nabla_\mu\int P_\mu(\theta) F(\theta)\ d\theta\\&=
+\int\nabla_\mu P_\mu(\theta) F(\theta)\ d\theta\\&=
+\int P_\mu(\theta)\nabla_\mu \log P_\mu(\theta) F(\theta)\ d\theta\\&=
+E_{\theta\sim P_\mu(\theta)}[\nabla_\mu \log P_\mu(\theta) F(\theta)]\\&\approx
+\frac{1}{N}\sum_{i=1}^N\left[\nabla_\mu \log P_\mu(\theta)|_{\theta = \theta_i} F(\theta_i) \right],\ \theta_i\sim P_\mu(\theta)
+\end{aligned}
+\end{equation}
+$$
+
+Sampling from a General Gaussian denstity:
+$$
+\mathbf x\sim N(\mu,\Sigma), \ x\sim \mu + L\mathscr{N}(0,1), \Sigma = LL^T
+$$
+<img src=".\pictures\NES.png" alt="NES" style="zoom:50%;" />
+
+### 6.4 Scalability of Evolutionary Methods
+
+Evolutionary methods work well on low dimensional problems. Can they be used to optimize policies represented as neural networks of thousands parameters?
+
+#### Distributed Stochastic Gradient Descent
+
+Every worker get a set of examples, and computes a gradient vector. The master averages those gradient vectors.
+
+<img src="D:.\pictures\DSGD.png" alt="DSGD" style="zoom:50%;" />
+
+<img src=".\pictures\PES.png" alt="PES" style="zoom:50%;" />
+
+However, ES can get stuck in local optima. A empirical suggestion is that searching for policies in multiple related tasks and in multiple related envs can help ES methods work better.
 
 
 
@@ -207,6 +372,8 @@ However, model leaning is unfortunately challenging:
 
 ### 7.1 MBRL in low dimensional space
 
+<!--TODO: HyperGAN -->
+
 Generally, to estimate optimal policy in MBRL, we can either finetune the policy using model-free method, or imitate a model-based controller(DAGGER). However, these two methods are relatively computational expensive. Researchers from UCB proposed a method called **Probabilistic Ensembles Trajectory Sampling**(PETS) which outperforms model-free methods while requiring significantly fewer samples.
 
 > We propose a new algorithm called probabilistic ensembles with trajectory sampling (PETS) that combines uncertainty-aware deep network dynamics models with sampling-based uncertainty propagation
@@ -237,19 +404,46 @@ Model-Based Policy Optimization:
 
 ### 7.2 AlphaGo, AlphaGoZero
 
+<!--Skip-->
 
+Monte Carlo search tree for Go is too wide and deep. 
+
+AlphaGo
 
 ### 7.3 MBRL in sensory space
 
+Sometimes we only have access to sensory inputs, such as videos or tactile signals. There're generally two ways to perform model learning from sensory inputs:
 
+- unrolling in the observation space: the model is trained to predict future *observations* (e.g. pixels of future frames)
+- unrolling in the latent space: we may use observation reconstruction as an auxiliary loss.
 
-### 7.4 MBRL Deterministic latent dynamics models
+We mainly focus on the latent space unrolling. 
 
+### 7.4 MBRL Deterministic latent dynamics models (muZero)
 
+<!--Skip-->
 
 ### 7.5 MBRL Stochastic latent dynamics models
 
+$s_{t+1}\sim p(s_{t+1}|s_t,a_t)$.
+
+<img src=".\pictures\DREAMER_ILLUST.png" alt="DREAMER_ILLUST" style="zoom:50%;" />
+
+<img src=".\pictures\DREAMER_ALGO.png" alt="DREAMER_ALGO" style="zoom:50%;" />
 
 
-## 8.Imitation Learning
+
+## 8. Curiosity-driven Exploration
+
+
+
+## 9. Imitation Learning
+
+
+
+### 9.1 kinesthetic imitation
+
+
+
+### 9.2 visual imitation
 
