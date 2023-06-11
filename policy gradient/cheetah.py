@@ -6,8 +6,8 @@ from policy_gradient import PolicyGradient
 from ppo import PPO
 
 cheetah = gym.make("HalfCheetah-v4")
-config = config_cheetah(use_baseline=True,ppo=True,seed=2)
+config = config_cheetah(use_baseline=True,ppo=True,seed=42)
 if not os.path.exists(config.output_path):
   os.makedirs(config.output_path)
-pg_baseline = PPO(env=cheetah, config=config, seed=2)
+pg_baseline = PPO(env=cheetah, config=config, seed=42)
 pg_baseline.run()

@@ -3,7 +3,7 @@ import torch.nn as nn
 from policy_gradient import PolicyGradient
 import gymnasium as gym
 import numpy as np
-from utils import np2torch, device
+from policy_utils.utils import np2torch, device
 
 class PPO(PolicyGradient):
   def __init__(self, env, config, seed, logger=None):

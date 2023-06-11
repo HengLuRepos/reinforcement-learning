@@ -3,7 +3,7 @@ import numpy as np
 import torch.nn as nn
 import gymnasium as gym
 from policy import CategoricalPolicy, GuassianPolicy
-from utils import device, np2torch, build_mlp, get_logger
+from policy_utils.utils import device, np2torch, build_mlp, get_logger
 from baseline import Baseline
 class PolicyGradient:
     def __init__(self, env, config, seed, logger=None):

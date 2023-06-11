@@ -118,7 +118,7 @@ class config_cheetah:
 
         # hyperparameters for PPO
         self.episilon = 0.1
-        self.update_freq = 10
+        self.update_freq = 20
 
         # since we start new episodes for each batch
         assert self.max_ep_len <= self.batch_size
