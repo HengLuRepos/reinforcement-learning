@@ -1,4 +1,6 @@
-.ipynb_checkpoints
+.ipynb_checkpoints/
+__pycache__/
+results/
 Notes
 DQN
 'policy gradient'/__pycache__/
@@ -7,3 +9,5 @@ DQN
 actor-critic/__pycache__/
 actor-critic/.ipynb_checkpoints/
 actor-critic/results/
+policy_utils/__pycache__/
+policy_utils/.ipynb_checkpoints/

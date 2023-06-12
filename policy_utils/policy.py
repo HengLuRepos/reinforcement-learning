@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.distributions as ptd
 
-from utils import device, np2torch
+from policy_utils.utils import device, np2torch
 class Policy:
     def action_distribution(self,obs):
         #given observations (torch tensors), return action distributions
@@ -11,9 +11,9 @@ class Policy:
         #given obs, return sampled actions(and corresponding log_probs, entropies)
         obs = np2torch(obs)
         dist = self.action_distribution(obs)
-        actions = dist.sample().cpu().numpy()
+        actions = dist.sample().cpu().numpy()[0]
         log_probs = dist.log_prob(np2torch(actions)).cpu().detach().numpy()
-        entropy = dist.entropy()
+        entropy = dist.entropy().cpu().detach().numpy()
         return actions, log_probs, entropy
 
 class CategoricalPolicy(Policy, nn.Module):
@@ -23,6 +23,8 @@ class CategoricalPolicy(Policy, nn.Module):
         self.network = policy_network.to(device)
     def action_distribution(self, obs):
         return ptd.Categorical(logits=self.network(obs).to(device))
+    def forward(self,obs):
+        return self.action(obs)
 
 class GuassianPolicy(Policy, nn.Module):
     #diagnoal Guassian Policy
@@ -35,6 +37,8 @@ class GuassianPolicy(Policy, nn.Module):
     def action_distribution(self, obs):
         mu = self.network(obs).to(device)
         return ptd.MultivariateNormal(loc=mu, scale_tril=torch.diag(self.std()))
+    def forward(self,obs):
+        return self.action(obs)
 
         
         

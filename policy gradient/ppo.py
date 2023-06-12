@@ -3,7 +3,7 @@ import torch.nn as nn
 from policy_gradient import PolicyGradient
 import gymnasium as gym
 import numpy as np
-from policy_utils.utils import np2torch, device
+from utils import np2torch, device
 
 class PPO(PolicyGradient):
   def __init__(self, env, config, seed, logger=None):
@@ -20,7 +20,7 @@ class PPO(PolicyGradient):
     r_theta = torch.exp(log_prob - old_log)
     clip_r_theta = torch.clip(r_theta, 1 - self.episilon , 1+ self.episilon)
     adv = torch.mul(r_theta,advantages)
-    clip_adv = torch.mul(clip_r_theta,advantages)
+    clip_adv = torch.mul(clip_r_theta,advantages.detach())
     loss = -torch.sum(torch.min(adv, clip_adv))
     self.optimizer.zero_grad()
     loss.backward()

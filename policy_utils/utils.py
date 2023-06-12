@@ -10,7 +10,7 @@ def build_mlp(observation_dim,action_dim,layer_size,n_layers):
         nn.Linear(observation_dim,layer_size),
         nn.ReLU(),
         *([nn.Linear(layer_size,layer_size), nn.ReLU()]*(n_layers - 1)),
-        nn.ReLU(layer_size,action_dim)
+        nn.Linear(layer_size,action_dim)
     )
 
 def np2torch(arr):
