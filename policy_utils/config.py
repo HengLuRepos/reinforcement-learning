@@ -1,5 +1,5 @@
 class Config:
-    def __init__(self, env_name, seed):
+    def __init__(self, env_name, seed, max_ep_num=1000):
         self.env_name = env_name
         self.seed_str = "seed=" + str(seed)
         self.output_path = "results/{}-{}/".format(self.env_name, self.seed_str)
@@ -15,3 +15,4 @@ class Config:
         self.max_ep_len = 1000
         self.num_batches = 200
         self.batch_size = 2000
+        self.max_ep_num = max_ep_num
