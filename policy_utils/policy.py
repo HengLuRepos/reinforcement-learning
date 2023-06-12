@@ -12,9 +12,7 @@ class Policy:
         obs = np2torch(obs)
         dist = self.action_distribution(obs)
         actions = dist.sample().cpu().numpy()[0]
-        log_probs = dist.log_prob(np2torch(actions)).cpu().detach().numpy()
-        entropy = dist.entropy().cpu().detach().numpy()
-        return actions, log_probs, entropy
+        return actions
 
 class CategoricalPolicy(Policy, nn.Module):
     def __init__(self, policy_network):

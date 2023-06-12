@@ -7,6 +7,7 @@ import torch.nn as nn
 import numpy as np
 from policy_utils.policy import CategoricalPolicy, GuassianPolicy
 from policy_utils.utils import build_mlp, device, np2torch, get_logger
+import os
 
 class Actor(nn.Module):
   def __init__(self, env, config):
@@ -74,6 +75,8 @@ class A2C(nn.Module):
     self.critic = Critic(self.env.observation_space.shape[0], self.config)
     self.max_ep_num = self.config.max_ep_num
     self.logger = get_logger(self.config.log_path)
+    if not os.path.exists(self.config.output_path):
+      os.makedirs(self.config.output_path)
   def train(self):
     all_episode_return = []
     for episode in range(self.max_ep_num):
@@ -92,8 +95,4 @@ class A2C(nn.Module):
       all_episode_return.append(episode_return)
       msg = "[EPISODE {}]: Epsodic reward: {:04.2f}".format(episode,episode_return)
       self.logger.info(msg)
-from policy_utils.config import Config
-env = gym.make("InvertedPendulum-v4")
-config = Config("InvertedPendulum-v4",seed=1)
-a2c = A2C(env, config, 1)
-a2c.train()
+    np.save(self.config.scores_output, all_episode_return)
