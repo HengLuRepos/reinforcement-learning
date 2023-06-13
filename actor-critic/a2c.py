@@ -85,7 +85,7 @@ class A2C(nn.Module):
       state, _ = self.env.reset()
       while not done:
         action, log_prob = self.actor(state)
-        next_state, reward, terminated, truncated, _ = env.step(action)
+        next_state, reward, terminated, truncated, _ = self.env.step(action)
         done = terminated or truncated
         advantage = reward + self.critic(next_state) * (1.0 - done) * self.config.gamma - self.critic(state)
         self.critic.update_critic(advantage)
