@@ -18,8 +18,11 @@ class Config:
         self.max_ep_num = max_ep_num
 
         #sac
-        self.num_iter = 1000
-        self.update_gradient_freq = 5
-        self.tau = 0.2
+        self.num_iter = 10000
+        self.update_gradient_freq = 50
+        self.tau = 0.001
+        self.q_lr = 3e-2
+        self.v_lr = 3e-2
+        self.pi_lr = 3e-2
         
         
