@@ -1,5 +1,12 @@
 class Config:
-    def __init__(self, env_name, seed, max_ep_num=1000, batch_size=2000):
+    def __init__(self,
+                 env_name,
+                 seed,
+                 max_ep_num=1000,
+                 batch_size=2000,
+                 buffer_batch_size=100,
+                 max_buffer_size=None,
+                 gamma=1.0):
         self.env_name = env_name
         self.seed_str = "seed=" + str(seed)
         self.output_path = "results/{}-{}/".format(self.env_name, self.seed_str)
@@ -11,18 +18,22 @@ class Config:
 
         self.lr = 3e-3
         self.value_update_freq = 1
-        self.gamma = 1.0
+        self.gamma = gamma
         self.max_ep_len = 1000
         self.num_batches = 200
         self.batch_size = batch_size
         self.max_ep_num = max_ep_num
 
         #sac
-        self.num_iter = 10000
+        self.num_iter = 100000
         self.update_gradient_freq = 50
-        self.tau = 0.001
-        self.q_lr = 3e-2
-        self.v_lr = 3e-2
-        self.pi_lr = 3e-2
+        self.tau = 0.005
+        self.q_lr = 3e-3
+        self.v_lr = 3e-3
+        self.pi_lr = 3e-3
+        self.buffer_batch_size = buffer_batch_size
+        self.max_buffer_size = max_buffer_size
+        self.alpha = 1.0
+        self.explore_step = 200
         
         

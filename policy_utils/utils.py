@@ -14,7 +14,8 @@ def build_mlp(observation_dim,action_dim,layer_size,n_layers):
     )
 
 def np2torch(arr):
-    return torch.from_numpy(arr).to(device).float()
+    x = torch.from_numpy(arr) if isinstance(arr, np.ndarray) else arr
+    return x.to(device).float()
 
     
 def get_logger(filename):
