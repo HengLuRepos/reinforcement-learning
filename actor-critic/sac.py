@@ -7,7 +7,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 from policy_utils.utils import build_mlp, device, np2torch, get_logger
-import os
 from  collections import deque
 import random
 
@@ -57,16 +56,13 @@ class ReparameterizedGuassianPolicy(nn.Module):
     def rsample(self, obs):
         obs = np2torch(obs)
         mean = self.mu_network(obs).to(device)
-        log_std = self.log_network(obs).to(device)
+        log_std = torch.clamp(self.log_network(obs).to(device), -20, 2)
         std = torch.exp(log_std).to(device)
-        dist = torch.distributions.MultivariateNormal(loc=mean, scale_tril=torch.diag_embed(std))
-        actions = dist.rsample() # allow backprop(reparametrization trick)
-        tanh_actions = torch.tanh(actions).cpu()
-        rescaled_actions = self.action_scale * tanh_actions + self.action_bias
-        log_probs = dist.log_prob(actions)
-        regularization = torch.log(1 - torch.pow(torch.tanh(actions), 2))
-        log_probs -= torch.sum(regularization)
-        return rescaled_actions.to(device), log_probs
+        pi_dist = torch.distributions.Normal(mean,std)
+        pi_act = pi_dist.rsample()
+        logp_pi = pi_dist.log_prob(pi_act).sum(axis=-1)
+        logp_pi -= (2*(np.log(2) - pi_act - torch.nn.functional.softplus(-2*pi_act))).sum(axis=1)
+        return pi_act.to(device), logp_pi
 
     def update_actor(self, q_new, log_probs):
         loss = torch.mean(log_probs - q_new)
@@ -203,6 +199,8 @@ class SAC:
         self.gamma = self.config.gamma
 
     def train(self):
+        for p in self.critic_target.parameters():
+            p.requires_grad = False
         all_episodic_rewards = []
         for i in range(self.config.num_iter):
             # exploration loop
