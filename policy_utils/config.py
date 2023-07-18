@@ -24,9 +24,11 @@ class Config:
         self.batch_size = batch_size
         self.max_ep_num = max_ep_num
 
+        self.save_freq = 200
+
         #sac
-        self.num_iter = 100000
-        self.update_gradient_freq = 50
+        self.num_iter = 2000
+        self.update_gradient_freq = 25
         self.tau = 0.005
         self.q_lr = 3e-3
         self.v_lr = 3e-3

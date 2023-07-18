@@ -6,9 +6,12 @@ DQN
 'policy gradient'/__pycache__/
 'policy gradient'/.ipynb_checkpoints/
 'policy gradient'/results/
+'policy gradient'/models/
 actor-critic/__pycache__/
 actor-critic/.ipynb_checkpoints/
 actor-critic/results/
+actor-critic/models/
 policy_utils/__pycache__/
 policy_utils/.ipynb_checkpoints/
+policy_utils/models/
 .idea/

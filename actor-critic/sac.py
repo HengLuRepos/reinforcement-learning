@@ -178,7 +178,7 @@ class SoftCritic(nn.Module):
                 param1.copy_(param2)
 
 
-class SAC:
+class SAC(nn.Module):
     def __init__(self, env, config, seed):
         super().__init__()
         self.env = env
@@ -241,6 +241,9 @@ class SAC:
                 self.actor.update_actor(q1_new, r_log_probs)
 
                 self.critic_target.hard_update(self.critic)
+            
+            if i % self.config.save_freq == 0:
+                self.save_model()
 
             # evaluation loop
             state, _ = self.env.reset()
@@ -257,3 +260,18 @@ class SAC:
             self.logger.info(msg)
         np.save(self.config.scores_output, all_episodic_rewards)
         self.logger.info("max episodic reward: {:04.2f}".format(max(all_episodic_rewards)))
+
+    def evaluation(self, logger, num_of_epoches=1000):
+        for i in range(num_of_epoches):
+            state, _ = self.env.reset()
+            done = False
+            while not done:
+                action = self.actor.step(state)
+                next_state, reward, terminated, truncated, _ = self.env.step(action)
+                episodic_reward = reward + self.gamma * episodic_reward
+                state = next_state
+                done = terminated or truncated
+            msg = "[EPISODE {}]: Episodic reward: {:04.2f}".format(i, episodic_reward)
+            logger.info(msg)
+    def save_model(self):
+        torch.save(self.state_dict(), "./models/sac.pt")
