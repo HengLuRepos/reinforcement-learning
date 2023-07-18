@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 from collections import deque
-from vehicle import  Vehicle, LeadingVehicle
 import random
 import numpy as np
 def build_mlp(input_dim, output_dim, n_layers, layer_size, activition='relu'):
