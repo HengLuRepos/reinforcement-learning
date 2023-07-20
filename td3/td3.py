@@ -87,8 +87,8 @@ class TD3(nn.Module):
     self.optimizer_q = torch.optim.Adam(self.q_network.parameters(), lr=self.lr)
     self.optimizer_q2 = torch.optim.Adam(self.q2_network.parameters(), lr=self.lr)
     self.optimizer_mu = torch.optim.Adam(self.mu_network.parameters(), lr=self.lr)
-  def save_model(self):
-    torch.save(self.state_dict(), './models/td3.pt')
+  def save_model(self, path='./models/td3.pt'):
+    torch.save(self.state_dict(), path)
   def load_model(self, path='./models/td3.pt'):
     self.load_state_dict(torch.load(path))
   
@@ -137,7 +137,7 @@ class TD3(nn.Module):
   
   def compute_q_targets(self, states):
     mu_targ = self.target_mu(states).detach().cpu().numpy() * self.config.max_action
-    action = np.clip(mu_targ + np.clip(np.random.randn(), -self.noise_clip, self.noise_clip), self.config.min_action, self.config.max_action)
+    action = np.clip(mu_targ + np.clip(np.random.normal(scale=self.config.target_noise), -self.noise_clip, self.noise_clip), self.config.min_action, self.config.max_action)
     action = np2torch(action)
     inputs = torch.cat([states, action], dim=1)
     out1 = self.target_q(inputs).squeeze()

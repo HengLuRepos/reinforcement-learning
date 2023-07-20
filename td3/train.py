@@ -18,7 +18,7 @@ for ep in range(2000):
     for i in range(config.start_steps):
         state = np2torch(state)
         mu = td3.mu_network(state).detach().squeeze().cpu().numpy() * A_MAX
-        action = np.clip(mu + np.random.randn(action_size), a_min=A_MIN, a_max=A_MAX)
+        action = np.clip(mu + np.random.normal(scale=config.act_noise), a_min=A_MIN, a_max=A_MAX)
         next_state, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
         buffer.remember(state, action, reward, next_state, done)
@@ -26,7 +26,7 @@ for ep in range(2000):
             state, info = env.reset()
         else:
             state = next_state
-    for i in range(20):
+    for i in range(25):
         states, actions, rewards, next_states, dones = buffer.sample()
         td3.update_q(states, actions, rewards, next_states, dones)
         if i % config.policy_delay == 0:
@@ -48,6 +48,6 @@ for ep in range(2000):
         td3.save_model()
     print("Iteration {}: Episodic reward: {}".format(ep, ep_rewards))
 
-td3.save_model()
+#td3.save_model()
 print("max_ep_reward: {}".format(max(all_ep_rewards)))
     

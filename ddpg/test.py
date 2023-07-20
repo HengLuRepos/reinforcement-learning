@@ -19,8 +19,16 @@ for ep in range(100):
     done = False
     ep_rewards = 0
     while not done:
-        state = np2torch(state)
-        action = ddpg.mu_network(state).detach().squeeze().cpu().numpy() * A_MAX
+        state = np2torch(state).unsqueeze(0)
+        model_fp32 = ddpg.mu_network
+        model_int8 = torch.ao.quantization.quantize_dynamic(
+            model_fp32,
+            {torch.nn.Linear},
+            dtype=torch.qint8
+        )
+        res = model_int8(state)
+        action = res.detach().squeeze().cpu().numpy() * A_MAX
+        #action = ddpg.mu_network(state).detach().squeeze().cpu().numpy() * A_MAX
         next_state, reward, terminated, truncated, info = env.step(action)
         ep_rewards += reward
         done = terminated or truncated
