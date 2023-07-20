@@ -15,3 +15,5 @@ policy_utils/__pycache__/
 policy_utils/.ipynb_checkpoints/
 policy_utils/models/
 .idea/
+ddpg/models/
+td3/models
