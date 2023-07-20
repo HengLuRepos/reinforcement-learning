@@ -76,8 +76,8 @@ class DDPG(nn.Module):
 
     self.optimizer_q = torch.optim.Adam(self.q_network.parameters(), lr=self.lr)
     self.optimizer_mu = torch.optim.Adam(self.mu_network.parameters(), lr=self.lr)
-  def save_model(self):
-    torch.save(self.state_dict(), './models/ddpg.pt')
+  def save_model(self, path='./models/ddpg.pt'):
+    torch.save(self.state_dict(), path)
   def load_model(self, path='./models/ddpg.pt'):
     self.load_state_dict(torch.load(path))
   

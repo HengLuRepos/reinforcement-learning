@@ -273,5 +273,5 @@ class SAC(nn.Module):
                 done = terminated or truncated
             msg = "[EPISODE {}]: Episodic reward: {:04.2f}".format(i, episodic_reward)
             logger.info(msg)
-    def save_model(self):
-        torch.save(self.state_dict(), "./models/sac.pt")
+    def save_model(self, path="./models/sac_org.pt"):
+        torch.save(self.state_dict(), path)

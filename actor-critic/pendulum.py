@@ -10,6 +10,10 @@ config = Config(env_name="InvertedPendulum-v4", seed=1, buffer_batch_size=100)
 if not os.path.exists(config.output_path):
   os.makedirs(config.output_path)
 sac = SAC(env=cheetah, config=config, seed=1)
-sac.load_state_dict(torch.load("./models/sac.pt"))
-print(sac)
+#sac.qconfig = torch.quantization.get_default_qconfig('x86')
+#torch.quantization.prepare(sac, inplace=True)
+sac.train()
+#torch.quantization.convert(sac, inplace=True)
+#sac.save_model()
+
 

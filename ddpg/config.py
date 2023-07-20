@@ -2,7 +2,7 @@ class Config:
     def __init__(self, action_max):
         self.buffer_size=50000
         self.batch_size=100
-        self.gamma = 1
+        self.gamma = 0.9
         self.rho = 0.995
         self.lr=5e-4
         
